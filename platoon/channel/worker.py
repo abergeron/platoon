@@ -34,10 +34,11 @@ import argparse
 import os
 import sys
 import signal
-import base64
+import binascii
 
 import numpy
 import posix_ipc
+
 import six
 import zmq
 
@@ -281,11 +282,11 @@ class Worker(object):
             self.device = theanoconf.device
             self._local_id = gpucoll.GpuCommCliqueId(context=self.gpuctx)
             # Ask controller for local's info to participate in
-            lid = base64.b64encode(self._local_id.comm_id).decode('ascii')
+            lid = binascii.b2a_hex(self._local_id.comm_id).decode('ascii')
             response = self.send_req("platoon-get_platoon_info",
                                      info={'device': self.device,
                                            'local_id': lid})
-            nlid = base64.b64decode(response['local_id'].encode('ascii'))
+            nlid = binascii.a2b_hex(response['local_id'])
             self._local_id.comm_id = bytearray(nlid)
             self._local_size = response['local_size']
             self._local_rank = response['local_rank']
